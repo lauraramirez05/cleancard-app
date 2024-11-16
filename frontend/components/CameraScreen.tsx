@@ -1,9 +1,18 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { View, Text, StyleSheet, Button, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import ProgressBar from './ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
 import { sendFile } from '../service/sendFile';
+import { useNavigation } from '@react-navigation/native';
+import AppContext from '../context/AppContext';
 import DataDisplay from './DataDisplay';
 
 export interface ImageProp {
@@ -21,6 +30,23 @@ const useCameraPermission = () => {
   return { permission, requestCameraPermission };
 };
 
+const getStepMessage = (step: number) => {
+  switch (step) {
+    case 1:
+      return 'Use natural light/near a window.';
+    case 2:
+      return 'Use warm light bulb or lamp.';
+    case 3:
+      return 'Use your flash.';
+    case 4:
+      return 'Diffused light, through a curtain to minimize shadow';
+    case 5:
+      return 'Ambient light in a well-lit room';
+    default:
+      return '';
+  }
+};
+
 const CameraScreen = () => {
   const { permission, requestCameraPermission } = useCameraPermission();
   const [cameraProps, setCameraProps] = useState({
@@ -29,8 +55,11 @@ const CameraScreen = () => {
   });
   const [images, setImages] = useState<ImageProp[]>([]);
   const [currImage, setCurrImage] = useState<ImageProp | null>(null);
-  const [response, setResponse] = useState([]);
+  const { setBiomarkersData } = useContext(AppContext);
   const camRef = useRef<Camera>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const navigation = useNavigation();
 
   if (!permission) return <View />;
 
@@ -69,24 +98,22 @@ const CameraScreen = () => {
 
   const retakePhoto = () => setCurrImage(null);
 
-  const nextPhoto = () => {
+  const nextPhoto = async () => {
     if (currImage) {
-      setImages((prev) => [...prev, currImage]);
-      sendFile(currImage, setResponse);
-
-      console.log('1', response);
+      await sendFile(currImage, setBiomarkersData);
+      // Update images and get the new array immediately
+      setImages((prev) => {
+        const newImages = [...prev, currImage];
+        // Check length of newImages array
+        if (newImages.length === 5) {
+          navigation.navigate('Success');
+        }
+        return newImages;
+      });
       setCurrImage(null);
+      setCurrentStep((prevStep) => prevStep + 1);
     }
   };
-
-
-  if (images.length === 2) {
-    return (
-      <View style={styles.container}>
-        <DataDisplay biomarkersData={response} />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -96,12 +123,16 @@ const CameraScreen = () => {
           <CameraView
             style={styles.camera}
             facing={cameraProps.facing}
+            flash={cameraProps.flash}
             ref={camRef}
           />
           <View style={styles.fullHighlightTop}>
-            <Text style={styles.messageText}>
-              Please put the whole test within the frame
-            </Text>
+            <View style={styles.tipText}>
+              <Ionicons name='bulb' color='white' size={25} />
+              <Text style={styles.messageText}>
+                {getStepMessage(currentStep)}
+              </Text>
+            </View>
           </View>
           <View style={styles.clearArea}>
             <View style={[styles.corner, styles.topLeft]} />
@@ -115,14 +146,19 @@ const CameraScreen = () => {
               name={`${cameraProps.flash === 'off' ? 'flash-off' : 'flash'}`}
               size={25}
               color='white'
+              style={styles.flashIcon}
               onPress={() => toggleProperty('flash', 'on', 'off')}
             />
-            <Ionicons
-              name='camera'
-              size={25}
-              color='white'
+            <TouchableOpacity
               onPress={takePicture}
-            />
+              style={styles.captureButton}
+            >
+              <View style={styles.circleOne}>
+                <View style={styles.circleTwo}>
+                  <View style={styles.circleThree}></View>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       ) : (
@@ -146,6 +182,7 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
 
   message: {
@@ -158,12 +195,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     padding: 20,
-    lineHeight: 22, // Adjust for better spacing if needed
+    lineHeight: 22,
   },
 
-  icon: {
-    position: 'absolute',
-    top: 65,
+  tipText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderRadius: 50,
   },
 
   flashlightText: {
@@ -178,7 +220,19 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingTop: 5,
     paddingBottom: 5,
-    lineHeight: 22, // Adjust for better spacing if needed
+    lineHeight: 22,
+  },
+
+  flashIcon: {
+    position: 'absolute',
+    top: 70,
+    textAlign: 'center',
+    borderRadius: 50,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 5,
+    paddingBottom: 5,
+    lineHeight: 22,
   },
 
   cameraContainer: {
@@ -199,7 +253,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     height: '30%',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Semi-transparent dark overlay
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -210,26 +264,57 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     height: '40%',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Semi-transparent dark overlay
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
   },
 
+  captureButton: {
+    position: 'absolute',
+    bottom: 40,
+  },
+
+  circleOne: {
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  circleTwo: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  circleThree: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    backgroundColor: 'white',
+  },
+
   clearArea: {
     position: 'absolute',
     top: '30%',
-    width: '100%', // Adjust the width of the clear area
-    height: '30%', // Adjust the height of the clear area
+    width: '100%',
+    height: '30%',
     backgroundColor: 'rgba(0, 0, 0, 0)',
     zIndex: 0,
   },
 
   corner: {
     position: 'absolute',
-    width: 40, // Size of the corner border
-    height: 40, // Size of the corner border
+    width: 40,
+    height: 40,
   },
+
   // Positioning each corner
   topLeft: {
     top: 0,

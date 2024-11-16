@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Animated } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProgressBar({ currentStep, totalSteps }) {
   const circles = Array.from({ length: totalSteps }, (_, index) => index);
@@ -7,13 +8,23 @@ export default function ProgressBar({ currentStep, totalSteps }) {
   return (
     <View style={styles.progressBar}>
       {circles.map((step, index) => (
-        <View
-          key={index}
-          style={[
-            styles.circle,
-            index < currentStep ? styles.completed : styles.incomplete,
-          ]}
-        ></View>
+        <View key={index} style={styles.circleContainer}>
+          {index < currentStep ? (
+            // Show checkmark icon for completed steps
+            <Ionicons name='checkmark-circle' size={25} color='green' />
+          ) : (
+            // Show grey circle for incomplete steps
+            <View style={[styles.circle, styles.incomplete]} />
+          )}
+          {index < totalSteps - 1 && (
+            <View
+              style={[
+                styles.line,
+                index < currentStep - 1 ? styles.completedLine : null,
+              ]}
+            />
+          )}
+        </View>
       ))}
     </View>
   );
@@ -24,13 +35,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+  },
+  circleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   circle: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    margin: 5,
     backgroundColor: '#dcdcdc',
   },
   completed: {
@@ -38,5 +54,14 @@ const styles = StyleSheet.create({
   },
   incomplete: {
     backgroundColor: '#dcdcdc', // Light gray for incomplete
+  },
+  line: {
+    width: 40,
+    height: 8, // Increased line height for better visibility
+    backgroundColor: '#dcdcdc',
+    marginTop: 2, // Reduced margin between circle and line for closer positioning
+  },
+  completedLine: {
+    backgroundColor: '#4caf50', // Green for completed line
   },
 });

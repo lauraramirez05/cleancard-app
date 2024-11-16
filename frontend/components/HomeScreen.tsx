@@ -1,29 +1,38 @@
 import * as React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Animated } from 'react-native';
+import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
-import ProgressBar from './ProgressBar';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
 
+  const logo = require('../assets/cleancard.svg');
+  const welcomeImage = require('../assets/undraw_medicine_b-1-ol.svg');
+
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>Welcome to Cleancard</Text>
-      <Text style={styles.subText}>
-        Your partner in early detection and peace of mind
-      </Text>
-      <Text style={styles.instructionText}>
-        This app will guide you through capturing five photos of your Cleancard
-        diagnostic device to ensure accurate results.
-      </Text>
-      <Button
-        title='Get Started'
-        onPress={() => navigation.navigate('Instructions')}
-        color='#4CAF50'
-      />
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Learn more about Cleancard</Text>
-        {/* Optionally, add a link or button to learn more */}
+      {/* Logo Section */}
+      <View style={styles.logoContainer}>
+        <Image source={logo} style={styles.logo} />
+      </View>
+
+      {/* Welcome Image Section */}
+      <View style={styles.imageContainer}>
+        <Image source={welcomeImage} style={styles.image} />
+      </View>
+
+      {/* Text and Button Section */}
+      <View style={styles.welcomeTextContainer}>
+        <Text style={styles.subText}>
+          Your partner in early detection and peace of mind
+        </Text>
+        <View style={styles.buttonContainer}>
+          <Button
+            title='Get Started'
+            color='white'
+            onPress={() => navigation.navigate('Instructions')}
+          />
+        </View>
       </View>
     </View>
   );
@@ -32,38 +41,47 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'space-around',
     padding: 20,
   },
-  welcomeText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: -80,
+  },
+  logo: {
+    width: '60%',
+    height: undefined,
+    aspectRatio: 1,
+    resizeMode: 'contain',
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
+    marginTop: -80,
+  },
+  image: {
+    width: '80%',
+    height: undefined,
+    aspectRatio: 1.5,
+    resizeMode: 'contain',
+  },
+  welcomeTextContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
   },
   subText: {
-    fontSize: 18,
-    color: '#777',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  instructionText: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#555',
-    marginBottom: 30,
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
+    marginBottom: 20,
   },
-  footer: {
-    position: 'absolute',
-    bottom: 20,
+  buttonContainer: {
     alignItems: 'center',
-  },
-  footerText: {
-    color: '#4CAF50',
-    fontSize: 16,
+    marginTop: 10,
+    backgroundColor: 'rgba(80, 117, 198, 1)',
+    width: '50%',
+    borderRadius: 20,
   },
 });
