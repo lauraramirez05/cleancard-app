@@ -4,11 +4,13 @@ export const sendFile = async (
   files: ImageProp,
   setBiomarkersData: React.Dispatch<React.SetStateAction<any>>
 ) => {
+  const yourUrl = `192.168.1.155`;
+
   try {
     const formData = new FormData();
     formData.append('files[]', files.fullWidth);
 
-    const response = await fetch('http://192.168.1.155:3000', {
+    const response = await fetch(`http://${yourUrl}:3000`, {
       method: 'POST',
       body: formData,
     });

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, StyleSheet, Button } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Swiper from 'react-native-swiper';
 import { useNavigation } from '@react-navigation/native';
 
@@ -12,6 +12,13 @@ export default function ResultsInfo() {
     max: 0.8,
     mean: 0.5,
   };
+
+  // Block going back when on this screen
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => null, // Disables the back button
+    });
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -69,12 +76,7 @@ export default function ResultsInfo() {
           </View>
         </View>
       </View>
-      <Swiper
-        showsPagination={true}
-        loop={false}
-        paginationStyle={styles.paginationStyle}
-        style={styles.swiper}
-      >
+      <Swiper showsPagination={true} loop={false}>
         <View style={styles.slide}>
           <View style={styles.textContainer}>
             <Text style={styles.slideTitle}>Range:</Text>
@@ -173,18 +175,19 @@ const styles = StyleSheet.create({
   container: {
     height: '98%',
     margin: 5,
+    paddingBottom: 30,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 30,
   },
   title: {
     fontWeight: 'bold',
     fontSize: 32,
   },
   testContainer: {
-    marginTop: 50,
-    marginBottom: 40,
+    marginTop: 30,
+    marginBottom: 30,
   },
   subtitle: {
     fontWeight: 'bold',
@@ -281,14 +284,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
   },
-  paginationStyle: {
-    // borderWidth: 2,
-    position: 'absolute',
-    bottom: 90, // Adjust this value to control how close the pagination is to the bottom
-    left: 0,
-    right: 0,
-    paddingBottom: 10, // You can add extra space if needed
-  },
+  // paginationStyle: {
+  //   // borderWidth: 2,
+  //   position: 'absolute',
+  //   bottom: 90, // Adjust this value to control how close the pagination is to the bottom
+  //   left: 0,
+  //   right: 0,
+  //   paddingBottom: 10, // You can add extra space if needed
+  // },
   textContainer: {
     paddingHorizontal: 20,
     marginBottom: 30,

@@ -42,12 +42,7 @@ function RootStack() {
         name='Success'
         component={ResultsInfo}
         options={{
-          headerTitle: () => (
-            <Image
-              source={logo} // Use the logo variable directly
-              style={styles.logo}
-            />
-          ),
+          headerTitle: () => <Image source={logo} style={styles.logo} />,
         }}
       />
       <Stack.Screen

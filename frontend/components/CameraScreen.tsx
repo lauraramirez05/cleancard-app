@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState, useContext, useCallback } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import {
   View,
@@ -11,7 +11,7 @@ import {
 import ProgressBar from './ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
 import { sendFile } from '../service/sendFile';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AppContext from '../context/AppContext';
 import DataDisplay from './DataDisplay';
 
@@ -61,9 +61,7 @@ const CameraScreen = () => {
 
   const navigation = useNavigation();
 
-  if (!permission) return <View />;
-
-  if (!permission.granted) {
+  if (!permission || !permission.granted) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>
@@ -115,6 +113,7 @@ const CameraScreen = () => {
     }
   };
 
+  
   return (
     <View style={styles.container}>
       <ProgressBar currentStep={images.length} totalSteps={5} />
@@ -128,7 +127,7 @@ const CameraScreen = () => {
           />
           <View style={styles.fullHighlightTop}>
             <View style={styles.tipText}>
-              <Ionicons name='bulb' color='white' size={25} />
+              <Ionicons name='bulb' color='white' size={20} />
               <Text style={styles.messageText}>
                 {getStepMessage(currentStep)}
               </Text>
@@ -194,14 +193,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     textAlign: 'center',
-    padding: 20,
+    padding: 10,
     lineHeight: 22,
   },
 
   tipText: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     paddingLeft: 10,
     paddingRight: 10,
